@@ -1,0 +1,11 @@
+pandas
+torch
+torchaudio
+torchvision
+numpy
+librosa
+PyYAML
+tensorboard
+tqdm
+opencv-python-headless
+numpy<2

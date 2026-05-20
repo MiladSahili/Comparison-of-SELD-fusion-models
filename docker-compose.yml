@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  train:
+    build: .
+    image: sld_docker_image
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - .:/app
+      - /datahome/msahili/data:/app/data
+      - ./results/logs:/app/results/logs
+    command: python train.py
+
+  tensorboard:
+    build: .
+    image: sld_docker_image
+    volumes:
+      - ./results/logs:/app/results/logs
+    ports:
+      - "6006:6006"
+    command: tensorboard --logdir=/app/results/logs --bind_all
