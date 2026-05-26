@@ -1,11 +1,13 @@
 pandas
-torch
 torchaudio
 torchvision
-numpy
+numpy<2
 librosa
 PyYAML
 tensorboard
 tqdm
 opencv-python-headless
-numpy<2
+soundfile
+openmim
+mmdet
+ultralytics

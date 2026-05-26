@@ -29,7 +29,7 @@ def wav_path2video_frame(wav_path, start_sec):
 
 
 class SELDDataSet(Dataset):
-    def __init__(self, args, object_detection):
+    def __init__(self, args):
         self._args = args
         self._train_wav_dict = {}
         self._time_array_dict = {}
@@ -39,30 +39,29 @@ class SELDDataSet(Dataset):
             self._time_array_dict[train_wav[0]] = pd.read_csv(real_csv, header=None).values
         with open(self._args.feature_config, 'r') as f:
             self._feature_config = json.load(f)
-        self._object_detection = object_detection
+      
 
     def __len__(self):
         return 9999  # dummy
 
-    def __getitem__(self, idx):
-        path, time_array, wav, fs, start = self._choice_wav(self._train_wav_dict)
-        input_wav = wav[start: start + round(self._args.train_wav_length * fs)]
-        input_spec = self._wav2spec(input_wav)
+def __getitem__(self, idx):
+    path, time_array, wav, fs, start = self._choice_wav(self._train_wav_dict)
+    input_wav = wav[start: start + round(self._args.train_wav_length * fs)]
+    input_spec = self._wav2spec(input_wav)
 
-        label = get_label(self._args.train_wav_length, time_array, start / fs, self._args.class_num)
-        label_float = label.astype(np.float32)
+    label = get_label(self._args.train_wav_length, time_array, start / fs, self._args.class_num)
+    label_float = label.astype(np.float32)
 
-        if self._object_detection is not None:
-            start_sec = start / fs
-            frame = wav_path2video_frame(path, start_sec)
-            frame_rgb_in = frame[:, :, [2, 1, 0]]  # BGR -> RGB
-            box_in = self._object_detection.img2box(frame_rgb_in)
-            frame_out = self._object_detection.box2dist(box_in)
-            frame_out_float = frame_out.astype(np.float32)
-        else:
-            frame_out_float = np.zeros(1, dtype=np.float32)  # Dummy
+    # Vorberechnete visuelle Features laden
+    start_sec = start / fs                                              # ← fehlte
+    npy_path = path.replace('foa_dev', 'visual_features').replace('.wav', '.npy')
+    all_frames = np.load(npy_path)                                      # (n_frames, 2, 6, 37)
+    fps = 24
+    frame_idx = int(start_sec * fps)
+    frame_idx = min(frame_idx, len(all_frames) - 1)
+    frame_out_float = all_frames[frame_idx].astype(np.float32)          # ← fehlte .astype()
 
-        return input_spec, frame_out_float, label_float, '{}_{}'.format(path, start / fs)
+    return input_spec, frame_out_float, label_float, '{}_{}'.format(path, start_sec)
 
     def _choice_wav(self, train_wav_dict):
         path, wav_fs = random.choice(list(train_wav_dict.items()))
