@@ -10,8 +10,8 @@ from utils.feature import SpectralFeature
 from utils.func_seld_data_loader import get_label, select_time
 
 
-def create_data_loader(args, object_detection):
-    data_set = SELDDataSet(args, object_detection)
+def create_data_loader(args):
+    data_set = SELDDataSet(args)
     return DataLoader(data_set, batch_size=args.batch_size, shuffle=True)
 
 
@@ -44,24 +44,24 @@ class SELDDataSet(Dataset):
     def __len__(self):
         return 9999  # dummy
 
-def __getitem__(self, idx):
-    path, time_array, wav, fs, start = self._choice_wav(self._train_wav_dict)
-    input_wav = wav[start: start + round(self._args.train_wav_length * fs)]
-    input_spec = self._wav2spec(input_wav)
+    def __getitem__(self, idx):
+        path, time_array, wav, fs, start = self._choice_wav(self._train_wav_dict)
+        input_wav = wav[start: start + round(self._args.train_wav_length * fs)]
+        input_spec = self._wav2spec(input_wav)
 
-    label = get_label(self._args.train_wav_length, time_array, start / fs, self._args.class_num)
-    label_float = label.astype(np.float32)
+        label = get_label(self._args.train_wav_length, time_array, start / fs, self._args.class_num)
+        label_float = label.astype(np.float32)
 
-    # Vorberechnete visuelle Features laden
-    start_sec = start / fs                                              # ← fehlte
-    npy_path = path.replace('foa_dev', 'visual_features').replace('.wav', '.npy')
-    all_frames = np.load(npy_path)                                      # (n_frames, 2, 6, 37)
-    fps = 24
-    frame_idx = int(start_sec * fps)
-    frame_idx = min(frame_idx, len(all_frames) - 1)
-    frame_out_float = all_frames[frame_idx].astype(np.float32)          # ← fehlte .astype()
+        # Vorberechnete visuelle Features laden
+        start_sec = start / fs                                              
+        npy_path = path.replace('foa_dev', 'visual_features').replace('.wav', '.npy')
+        all_frames = np.load(npy_path)                                      
+        fps = 24
+        frame_idx = int(start_sec * fps)
+        frame_idx = min(frame_idx, len(all_frames) - 1)
+        frame_out_float = all_frames[frame_idx].astype(np.float32)          
 
-    return input_spec, frame_out_float, label_float, '{}_{}'.format(path, start_sec)
+        return input_spec, frame_out_float, label_float, '{}_{}'.format(path, start_sec)
 
     def _choice_wav(self, train_wav_dict):
         path, wav_fs = random.choice(list(train_wav_dict.items()))
