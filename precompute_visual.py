@@ -13,17 +13,18 @@ class ObjectDetection(object):
         self._model = YOLO("yolov8n.pt")  # lädt automatisch herunter
 
     def img2box(self, img_in):
+        h, w = img_in.shape[:2]          # echte Bildgröße aus dem Frame
         results = self._model(img_in, verbose=False)
         box_out = np.zeros((self._n_box, 4))
         i = 0
         for result in results:
             for box in result.boxes:
-                if int(box.cls) == 0 and float(box.conf) > self._thresh_conf:  # 0 = person
+                if int(box.cls) == 0 and float(box.conf) > self._thresh_conf:
                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                    box_out[i, 0] = x1 / 360
-                    box_out[i, 1] = y1 / 180
-                    box_out[i, 2] = x2 / 360
-                    box_out[i, 3] = y2 / 180
+                    box_out[i, 0] = x1 / w
+                    box_out[i, 1] = y1 / h
+                    box_out[i, 2] = x2 / w
+                    box_out[i, 3] = y2 / h
                     i += 1
                     if i >= self._n_box:
                         break

@@ -56,7 +56,7 @@ class SELDDataSet(Dataset):
         start_sec = start / fs                                              
         npy_path = path.replace('foa_dev', 'visual_features').replace('.wav', '.npy')
         all_frames = np.load(npy_path)                                      
-        fps = 24
+        fps = 29.97
         frame_idx = int(start_sec * fps)
         frame_idx = min(frame_idx, len(all_frames) - 1)
         frame_out_float = all_frames[frame_idx].astype(np.float32)          
