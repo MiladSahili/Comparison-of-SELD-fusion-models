@@ -219,3 +219,6 @@ __marimo__/
 
 #docker
 .swp
+
+__pycache__/
+*.pyc

@@ -38,3 +38,4 @@
 /app/data/foa_dev/dev-train-sony/fold3_room21_mix024.wav
 /app/data/foa_dev/dev-train-sony/fold3_room21_mix019.wav
 /app/data/foa_dev/dev-train-sony/fold3_room21_mix008.wav
+/app/data/foa_dev/dev-train-sony/fold3_room21_mix012.wav
