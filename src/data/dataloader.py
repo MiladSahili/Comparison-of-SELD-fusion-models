@@ -5,9 +5,8 @@ import pandas as pd
 import soundfile as sf
 import cv2
 from torch.utils.data import Dataset, DataLoader
-
-from utils.feature import SpectralFeature
-from utils.func_seld_data_loader import get_label, select_time
+from src.features.feature import SpectralFeature
+from src.data.func_seld_data_loader import get_label, select_time
 
 
 def create_data_loader(args):
@@ -56,8 +55,7 @@ class SELDDataSet(Dataset):
         start_sec = start / fs                                              
         npy_path = path.replace('foa_dev', 'visual_features').replace('.wav', '.npy')
         all_frames = np.load(npy_path)                                      
-        fps = 29.97
-        frame_idx = int(start_sec * fps)
+        frame_idx = int(start_sec * self._args.video_fps)
         frame_idx = min(frame_idx, len(all_frames) - 1)
         frame_out_float = all_frames[frame_idx].astype(np.float32)          
 

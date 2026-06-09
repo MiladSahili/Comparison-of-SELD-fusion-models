@@ -1,0 +1,41 @@
+# configs/mid_fusion.yaml
+# Baseline: Mid-Level (Feature-Level) Fusion, reproduziert die DCASE-2023-Baseline
+
+experiment:
+  name: mid_fusion            # steuert log_dir und Checkpoint-Namen
+  fusion: mid                 # mid | early | late | audio_only -> waehlt das Fusion-Modul
+
+data:
+  train_wav_txt: /app/data/dev_train_clean.txt   # bereinigt, ohne mix001-012
+  test_wav_txt:  /app/splits/dev_test.txt
+  feature_config: /app/configs/feature.json
+  visual_features_dir: /app/data/visual_features
+  video_fps: 29.97            # echte STARSS23-fps (NICHT 24!) -> in den Dataloader durchreichen
+  train_wav_length: 1.27      # Sekunden pro Segment
+  batch_size: 32              # Debug war 4; fuer echtes Training hochsetzen
+  num_workers: 4
+
+features:
+  feature: amp_phasediff      # -> 7 Audio-Kanaele (4 Amplitude + 3 Phasendifferenz)
+  fft_size: 512               # -> 257 Frequenz-Bins
+  stft_hop_size: 240          # -> 100 Frames/s, 128 Frames pro 1.27s-Segment
+
+model:
+  in_ch: 7                    # = features-Kanaele, muss zu spec.shape[1] passen
+  class_num: 13               # STARSS23-Zielklassen
+  n_tracks: 3                 # Multi-ACCDOA-Tracks -> Output 3*3*13 = 117
+  vis_in: 444                 # 2 * 6 * 37, geflachtes Visual-Feature
+  vis_emb: 128                # Dimension des Visual-Embeddings nach dem FC-Encoder
+  rnn_size: 128               # GRU-Hidden-Size (bidirektional -> 256 am Decoder)
+
+training:
+  epochs: 100
+  optimizer: adam
+  lr: 0.001
+  device: cuda
+  save_every: 1               # Checkpoint-Frequenz in Epochen
+  eval_every: 5               # Metriken (F/LE/LR) alle n Epochen
+
+paths:
+  log_dir:        /app/results/logs/mid_fusion        # TensorBoard liest hier
+  checkpoint_dir: /app/results/checkpoints/mid_fusion
