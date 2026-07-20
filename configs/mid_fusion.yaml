@@ -12,7 +12,7 @@ data:
   visual_features_dir: /app/data/visual_features
   video_fps: 29.97            # echte STARSS23-fps (NICHT 24!) -> in den Dataloader durchreichen
   train_wav_length: 1.27      # Sekunden pro Segment
-  batch_size: 32              # Debug war 4; fuer echtes Training hochsetzen
+  batch_size:  16             # Debug war 4; fuer echtes Training hochsetzen
   num_workers: 4
 
 features:
@@ -32,9 +32,15 @@ training:
   epochs: 100
   optimizer: adam
   lr: 0.001
+  weight_decay: 0.000001   # = 1e-6, Sony-Wert
+  lr_decay_step: 10000     # alle 10000 Iterationen
+  lr_decay_gamma: 0.5
   device: cuda
   save_every: 1               # Checkpoint-Frequenz in Epochen
-  eval_every: 5               # Metriken (F/LE/LR) alle n Epochen
+  eval_every: 5 
+  random_seed: 0 
+  max_iter: 10000 
+  model_save_interval: 1000            # Metriken (F/LE/LR) alle n Epochen
 
 paths:
   log_dir:        /app/results/logs/mid_fusion        # TensorBoard liest hier

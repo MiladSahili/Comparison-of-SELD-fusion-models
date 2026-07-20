@@ -11,3 +11,4 @@ soundfile
 openmim
 mmdet
 ultralytics
+torchinfo
