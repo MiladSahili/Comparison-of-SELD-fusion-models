@@ -26,6 +26,14 @@ def load_args(path):
         random_seed=cfg["training"].get("random_seed", 0),
         max_iter=cfg["training"]["max_iter"],
         model_save_interval=cfg["training"]["model_save_interval"],
+        val=cfg["validation"]["val"],
+        eval=cfg["validation"]["eval"],
+        val_wav_txt=cfg["validation"]["val_wav_txt"],
+        eval_wav_txt=cfg["validation"]["eval_wav_txt"],
+        eval_model=cfg["validation"]["eval_model"],
+        threshold_config=cfg["validation"]["threshold_config"],
+        eval_wav_hop_length=cfg["validation"]["eval_wav_hop_length"],
+        sampling_frequency=cfg["validation"]["sampling_frequency"],
     )
 
 def main():
@@ -42,6 +50,8 @@ def main():
 
     writer = SummaryWriter(log_dir="/app/results/logs/mid_fusion")   # <-- HIER, vor der Schleife
 
+
+
     # ── 2. Trainingsschleife ─────────────────────────────
     for it in range(args.max_iter):
         trainer.receive_input()
@@ -53,6 +63,8 @@ def main():
             print(f"iter {it} | loss {trainer.get_loss():.4f}")
         if it % args.model_save_interval == 0 and it > 0:
             trainer.save(args.checkpoint_dir, it)
+
+    trainer.save(args.checkpoint_dir, args.max_iter)     
 
     # ── 3. Aufräumen (NACH der Schleife) ─────────────────
     writer.close()                                                    # <-- erst HIER

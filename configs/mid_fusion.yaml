@@ -8,6 +8,7 @@ experiment:
 data:
   train_wav_txt: /app/data/dev_train_clean.txt   # bereinigt, ohne mix001-012
   test_wav_txt:  /app/splits/dev_test.txt
+  eval_wav_txt:  /app/splits/dev_test.txt
   feature_config: /app/configs/feature.json
   visual_features_dir: /app/data/visual_features
   video_fps: 29.97            # echte STARSS23-fps (NICHT 24!) -> in den Dataloader durchreichen
@@ -39,8 +40,18 @@ training:
   save_every: 1               # Checkpoint-Frequenz in Epochen
   eval_every: 5 
   random_seed: 0 
-  max_iter: 10000 
-  model_save_interval: 1000            # Metriken (F/LE/LR) alle n Epochen
+  max_iter: 20000 
+  model_save_interval: 1000   
+
+validation:
+  val: true
+  eval: false
+  val_wav_txt: /app/data/dev_test_abs.txt
+  eval_wav_txt: null
+  eval_model: null            # wird von validation() gesetzt
+  threshold_config: /app/configs/threshold.json
+  eval_wav_hop_length: 1.2
+  sampling_frequency: 24000           # Metriken (F/LE/LR) alle n Epochen
 
 paths:
   log_dir:        /app/results/logs/mid_fusion        # TensorBoard liest hier
