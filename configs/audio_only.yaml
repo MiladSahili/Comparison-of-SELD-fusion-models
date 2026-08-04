@@ -1,0 +1,58 @@
+# configs/audio_only.yaml
+# Audio-Only-Baseline: identischer Audio-Pfad wie Mid-Fusion, ohne Visual-Eingang
+
+experiment:
+  name: audio_only            # steuert log_dir und Checkpoint-Namen
+  fusion: audio_only          # mid | early | late | audio_only -> waehlt das Fusion-Modul
+
+data:
+  train_wav_txt: /app/data/dev_train_clean.txt   # bereinigt, ohne mix001-012
+  test_wav_txt:  /app/splits/dev_test.txt
+  eval_wav_txt:  /app/splits/dev_test.txt
+  feature_config: /app/configs/feature.json
+  visual_features_dir: /app/data/visual_features   # wird geladen, aber vom Modell ignoriert
+  video_fps: 29.97
+  train_wav_length: 1.27
+  batch_size:  16
+  num_workers: 4
+
+features:
+  feature: amp_phasediff
+  fft_size: 512
+  stft_hop_size: 240
+
+model:
+  in_ch: 7
+  class_num: 13
+  n_tracks: 3
+  vis_in: 444                 # ungenutzt, nur der Vollstaendigkeit halber
+  vis_emb: 128                # ungenutzt
+  rnn_size: 128               # GRU-Hidden-Size identisch zur Mid-Fusion
+
+training:
+  epochs: 100
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.000001
+  lr_decay_step: 10000
+  lr_decay_gamma: 0.5
+  device: cuda
+  save_every: 1
+  eval_every: 5
+  random_seed: 0
+  max_iter: 20000
+  model_save_interval: 1000
+
+validation:
+  val: true
+  eval: false
+  val_wav_txt: /app/data/dev_test_abs.txt
+  eval_wav_txt: null
+  eval_model: null
+  threshold_config: /app/configs/threshold.json
+  eval_wav_hop_length: 1.2
+  sampling_frequency: 24000
+
+paths:
+  log_dir:        /app/results/logs/audio_only
+  checkpoint_dir: /app/results/checkpoints/audio_only
