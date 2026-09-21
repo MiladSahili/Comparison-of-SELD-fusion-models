@@ -37,7 +37,7 @@ Key finding: late fusion wins the overall SELD score through the lowest error ra
 audio–video correspondence leaves performance unchanged. The only measurable benefit
 of visual information occurs with feature-level fusion (per-class F-scores for
 person-related classes, best localization error), which requires aligned audio–video
-input. Model capacity does not explain these differences.
+input. 
 
 ## Repository structure
 
