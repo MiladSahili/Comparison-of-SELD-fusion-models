@@ -9,11 +9,21 @@ def _create_net(args):
     """Waehlt die Modell-Implementierung anhand von args.net (aus experiment.fusion)."""
     if args.net in ('crnn', 'mid'):           # Mid Fusion (bisher)
         from src.models.midlevel.net_seld import create_net_seld
+    elif args.net == 'mid_transformer':       # Transformer-basierte Mid-Fusion
+        from src.models.midlevel_Transformer.net_seld import create_net_seld
+    elif args.net == 'mid_shuffled':          # Mid Fusion, geshuffelte Visual-Features
+        from src.models.midlevel_shuffled.net_seld import create_net_seld
     elif args.net == 'audio_only':            # Audio-Only
         from src.models.audioonly.net_seld import create_net_seld
-    elif args.net in ('late_crnn', 'late'):   # Late Fusion
-        from src.models.latelevel.net_seld import create_net_seld
-    elif args.net == 'early':                 # Early Fusion (später)
+    elif args.net == 'audio_only_matched':    # Capacity-matched Audio-Only
+        from src.models.audioonly_matched.net_seld import create_net_seld
+    elif args.net == 'visual_only':           # Visual-Only
+        from src.models.visual_only.net_seld import create_net_seld
+    elif args.net == 'late':                  # Late Fusion
+        from src.models.late_fusion.net_seld import create_net_seld
+    elif args.net == 'late_shuffled':         # Late Fusion, geshuffelte Visual-Features
+        from src.models.late_fusion_shuffled.net_seld import create_net_seld
+    elif args.net == 'early':                 # Early Fusion
         from src.models.earlylevel.net_seld import create_net_seld
     else:
         raise ValueError(f"Unbekannter net-Typ: {args.net}")
@@ -34,6 +44,8 @@ class SELDTrainer(object):
             lr=self._args.lr,
             weight_decay=self._args.weight_decay
         )
+        self._accumulation_steps = getattr(self._args, 'accumulation_steps', 1)
+        self._accumulation_counter = 0
 
     def receive_input(self):
         _input_a, _input_v, _label, _ = next(iter(self._data_loader))
@@ -43,7 +55,11 @@ class SELDTrainer(object):
 
     def back_propagation(self):
         self._net.train()
-        self._optimizer.zero_grad()
+
+        # Gradient Accumulation: zero_grad nur am Anfang eines Akkumulationszyklus
+        if self._accumulation_counter == 0:
+            self._optimizer.zero_grad()
+
         self._output = self._net(self._input_a, self._input_v)
 
         if isinstance(self._output, tuple):
@@ -56,8 +72,18 @@ class SELDTrainer(object):
             # Mid Fusion / Audio-Only: unveraendert
             self._loss = self._criterion(self._output, self._label)
 
-        self._loss.backward()
-        self._optimizer.step()
+        # Loss skalieren, damit die effektive Batchgröße korrekt ist
+        scaled_loss = self._loss / self._accumulation_steps
+        scaled_loss.backward()
+
+        self._accumulation_counter += 1
+
+        # Optimizer-Schritt nur nach vollständiger Akkumulation
+        if self._accumulation_counter == self._accumulation_steps:
+            if getattr(self._args, 'grad_clip_norm', None) is not None:
+                torch.nn.utils.clip_grad_norm_(self._net.parameters(), self._args.grad_clip_norm)
+            self._optimizer.step()
+            self._accumulation_counter = 0
 
     def save(self, checkpoint_dir, iteration):
         import os

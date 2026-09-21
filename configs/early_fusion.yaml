@@ -1,0 +1,59 @@
+# configs/early_fusion.yaml
+# Early Fusion: Video als zusätzlicher Kanal vor dem CNN
+
+experiment:
+  name: early_fusion
+  fusion: early               # mid | early | late | audio_only
+
+data:
+  train_wav_txt: /app/data/dev_train_av_78.txt
+  test_wav_txt:  /app/data/dev_test_78.txt
+  eval_wav_txt:  /app/data/dev_test_78.txt
+  feature_config: /app/configs/feature.json
+  visual_features_dir: /app/data/visual_features
+  feature_config: /app/configs/feature.json
+  video_fps: 29.97
+  train_wav_length: 1.27
+  batch_size: 16
+  num_workers: 4
+
+features:
+  feature: amp_phasediff
+  fft_size: 512
+  stft_hop_size: 240
+
+model:
+  in_ch: 7                    # Audio-Kanäle (wird zu 8 mit Video)
+  class_num: 13
+  n_tracks: 3
+  vis_in: 444                 # 2 * 6 * 37
+  vis_emb: 128                # Nicht verwendet bei Early Fusion (direkte Projektion)
+  rnn_size: 128
+
+training:
+  epochs: 100
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.000001
+  lr_decay_step: 10000
+  lr_decay_gamma: 0.5
+  device: cuda
+  save_every: 1
+  eval_every: 5
+  random_seed: 0
+  max_iter: 20000
+  model_save_interval: 1000
+
+validation:
+  val: true
+  eval: false
+  val_wav_txt: /app/data/dev_test_78.txt
+  eval_wav_txt: null
+  eval_model: null
+  threshold_config: /app/configs/threshold.json
+  eval_wav_hop_length: 1.2
+  sampling_frequency: 24000
+
+paths:
+  log_dir: /app/results/logs/early_fusion_78
+  checkpoint_dir: /app/results/checkpoints/early_fusion_78

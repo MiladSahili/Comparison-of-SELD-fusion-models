@@ -14,7 +14,7 @@ def create_net_seld(args):
 
     in_channels = feature_config[args.feature]["ch"]
 
-    if args.net == "crnn":
+    if args.net in ("crnn", "early", "early_fusion"):
         Net = AudioVisualCRNN_Early(
             class_num=args.class_num,
             in_channels=in_channels
@@ -28,17 +28,17 @@ class AudioVisualCRNN_Early(nn.Module):
         self.class_num = class_num
         self.interp_ratio = interp_ratio
 
-        # 1. Visuelle Projektion auf die Frequenz-Auflösung des Audios (Standard: 64 Bins)
+        # FIX 1: Video auf die tatsächliche Audio-Frequenz-Auflösung projizieren
         vis_in_size = 2 * 6 * 37  # 444
-        self.vis_to_freq = nn.Linear(vis_in_size, 64)
+        audio_freq_bins = 257     # FFT 512 / 2 + 1
+        self.vis_to_freq = nn.Linear(vis_in_size, audio_freq_bins)
 
-        # 2. Gemeinsamer Encoder (in_channels + 1, da Video als zusätzlicher Kanal angehängt wird)
+        # FIX 2: CNN3 mit korrekten Pooling-Faktoren (wie Baseline: 2x2 überall)
         embed_size = 64
         self.shared_encoder = CNN3(
-            in_channels=in_channels + 1,
+            in_channels=in_channels + 1,  # 7 Audio + 1 Video = 8
             out_channels=embed_size
         )
-
         # 3. Rekurrente Schicht (Bekoommt jetzt 64 statt 128 Features, da bereits früh fusioniert wurde)
         self.gru = nn.GRU(
             input_size=embed_size,

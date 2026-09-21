@@ -6,9 +6,9 @@ experiment:
   fusion: audio_only          # mid | early | late | audio_only -> waehlt das Fusion-Modul
 
 data:
-  train_wav_txt: /app/data/dev_train_clean.txt   # bereinigt, ohne mix001-012
-  test_wav_txt:  /app/splits/dev_test.txt
-  eval_wav_txt:  /app/splits/dev_test.txt
+  train_wav_txt: /app/data/dev_train_av_78.txt   # bereinigt, ohne mix001-012
+  test_wav_txt:  /app/data/dev_test_78.txt
+  eval_wav_txt:  /app/data/dev_test_78.txt
   feature_config: /app/configs/feature.json
   visual_features_dir: /app/data/visual_features   # wird geladen, aber vom Modell ignoriert
   video_fps: 29.97
@@ -34,12 +34,11 @@ training:
   optimizer: adam
   lr: 0.001
   weight_decay: 0.000001
-  lr_decay_step: 10000
-  lr_decay_gamma: 0.5
+
   device: cuda
   save_every: 1
   eval_every: 5
-  random_seed: 0
+  random_seed: 89
   max_iter: 20000
   model_save_interval: 1000
 

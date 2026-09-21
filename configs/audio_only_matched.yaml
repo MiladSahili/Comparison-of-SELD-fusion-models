@@ -1,0 +1,59 @@
+# configs/audio_only_matched.yaml
+# Capacity-matched Audio-Only-Baseline: identischer Audio-Pfad wie Audio-Only,
+# aber GRU hidden_size=266 statt 256 (~666k Parameter, 99.6% der Kapazitaet
+# des Late-Fusion-Modells mit ~669k). Kontrolle, ob ein etwaiger Vorteil von
+# Late Fusion durch mehr Parameter erklaerbar ist.
+
+experiment:
+  name: audio_only_matched
+  fusion: audio_only_matched
+
+data:
+  train_wav_txt: /app/data/dev_train_av_78.txt
+  test_wav_txt:  /app/data/dev_test_78.txt
+  eval_wav_txt:  /app/data/dev_test_78.txt
+  feature_config: /app/configs/feature.json
+  visual_features_dir: /app/data/visual_features   # wird geladen, aber ignoriert
+  video_fps: 29.97
+  train_wav_length: 1.27
+  batch_size:  16
+  num_workers: 4
+
+features:
+  feature: amp_phasediff
+  fft_size: 512
+  stft_hop_size: 240
+
+model:
+  in_ch: 7
+  class_num: 13
+  n_tracks: 3
+  vis_in: 444
+  vis_emb: 128
+  rnn_size: 266               # GRU-Hidden-Size -> Kapazitaets-Match zu Late Fusion
+
+training:
+  epochs: 100
+  optimizer: adam
+  lr: 0.001
+  weight_decay: 0.000001
+  device: cuda
+  save_every: 1
+  eval_every: 5
+  random_seed: 89
+  max_iter: 20000
+  model_save_interval: 1000
+
+validation:
+  val: true
+  eval: false
+  val_wav_txt: /app/data/dev_test_78.txt
+  eval_wav_txt: null
+  eval_model: null
+  threshold_config: /app/configs/threshold.json
+  eval_wav_hop_length: 1.2
+  sampling_frequency: 24000
+
+paths:
+  log_dir:        /app/results/logs/audio_only_matched
+  checkpoint_dir: /app/results/checkpoints/audio_only_matched

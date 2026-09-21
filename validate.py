@@ -7,9 +7,8 @@ import re
 
 from src.eval.seld_validator import SELDValidator
 
-
-CONFIG_PATH = "/app/configs/mid_fusion.yaml"
-CHECKPOINT_DIR = "/app/results/checkpoints/mid_fusion/"
+CONFIG_PATH    = "/app/configs/visual_only.yaml"
+CHECKPOINT_DIR = "/app/results/checkpoints/visual_only/"
 MONITOR_PATH = "/app/results/val"
 
 
@@ -29,7 +28,8 @@ def load_args(path):
         feature=cfg["features"]["feature"],
         # Modell
         class_num=cfg["model"]["class_num"],
-        net=cfg["model"].get("net", "crnn"),
+        dropout=cfg["model"].get("dropout", 0.05),
+        net=cfg["experiment"].get("fusion", "crnn"),
         # Validierung
         val=cfg["validation"]["val"],
         eval=cfg["validation"]["eval"],
@@ -49,13 +49,13 @@ def get_iteration_from_filename(filename):
 
 def main():
     args = load_args(CONFIG_PATH)
-    
+    print(f"DEBUG: args.net = '{args.net}'")
     # 1. Alle Checkpoints finden und nach Iterationszahl sortieren
     checkpoints = sorted(
         glob.glob(os.path.join(CHECKPOINT_DIR, "*.pth")),
         key=get_iteration_from_filename
     )
-    
+    checkpoints = checkpoints[-10:]  
     if not checkpoints:
         print(f"Keine Checkpoints in {CHECKPOINT_DIR} gefunden!")
         return
@@ -79,7 +79,7 @@ def main():
 
     # 3. CSV-Datei speichern
     os.makedirs(MONITOR_PATH, exist_ok=True)
-    csv_path = os.path.join(MONITOR_PATH, "mid_fusion_validation_curve.csv")
+    csv_path = os.path.join(MONITOR_PATH, "visual_only_validation_curve.csv")
     
     with open(csv_path, mode="w", newline="") as f:
         writer = csv.writer(f)

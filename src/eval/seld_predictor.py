@@ -5,6 +5,7 @@ import cv2
 import json
 import pandas as pd
 
+from src.training.trainer import _create_net
 from src.models.midlevel.net_seld import create_net_seld
 from src.losses.adpit import MSELoss_ADPIT
 from dcase2022_task3_seld_metrics.SELD_evaluation_metrics import distance_between_spherical_coordinates_rad
@@ -15,7 +16,7 @@ class SELDClassifier(object):
         self._args = args
         self._device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        self._net = create_net_seld(self._args)
+        self._net = _create_net(self._args)
         self._net.to(self._device)
         self._net.eval()
         checkpoint = torch.load(self._args.eval_model, map_location=lambda s, l: s)

@@ -10,7 +10,7 @@ from src.models.midlevel.net_util import interpolate
 def create_net_seld(args):
     with open(args.feature_config, 'r') as f:
         feature_config = json.load(f)
-    if args.net == 'crnn':
+    if args.net in ('crnn','mid'):
         Net = AudioVisualCRNN(class_num=args.class_num,
                               in_channels=feature_config[args.feature]["ch"])
     return Net

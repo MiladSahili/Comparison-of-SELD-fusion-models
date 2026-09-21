@@ -222,3 +222,31 @@ __marimo__/
 
 __pycache__/
 *.pyc
+
+# --- Project: artifacts and data ---
+results/
+data/
+splits/
+*.pth
+*.pthDu
+
+# --- Project: analysis and plotting scripts (kept locally, not in repo) ---
+plot_*.py
+show_*.py
+export_tb.py
+validate.late.py
+inspect_model.py
+
+# --- Project: working documents and logs ---
+*.log
+AGENTS.md
+PRESENTATION_*.md
+FUSION_OVERVIEW.md
+PROPOSED_SYSTEM.md
+CHAPTER5_EXPERIMENTAL_SETUP.md
+RESULTS_DISCUSSION.md
+
+# --- Generated figures ---
+/class_distribution.png
+/results/**/*.png
+/results/**/*.pdf

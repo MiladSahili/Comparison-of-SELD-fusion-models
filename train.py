@@ -17,11 +17,14 @@ def load_args(path):
         stft_hop_size=cfg["features"]["stft_hop_size"],
         feature=cfg["features"]["feature"],
         class_num=cfg["model"]["class_num"],
+        dropout=cfg["model"].get("dropout", 0.05),
         net=cfg["experiment"].get("fusion", "crnn"),          # <-- (1) AUS experiment.fusion
         lr=cfg["training"]["lr"],
         weight_decay=cfg["training"].get("weight_decay", 1e-6),
         lr_decay_step=cfg["training"].get("lr_decay_step", 10000),
         lr_decay_gamma=cfg["training"].get("lr_decay_gamma", 0.5),
+        grad_clip_norm=cfg["training"].get("grad_clip_norm", None),
+        accumulation_steps=cfg["training"].get("accumulation_steps", 1),
         iterations=cfg["training"].get("iterations", 10000),
         checkpoint_dir=cfg["paths"]["checkpoint_dir"],
         log_dir=cfg["paths"]["log_dir"],                      # <-- (2) NEU: aus Config
@@ -40,7 +43,7 @@ def load_args(path):
 
 
 def main():
-    args = load_args("/app/configs/audio_only.yaml")          # <-- (3) Audio-Only-Config
+    args = load_args("/app/configs/mid_fusion_shuffled.yaml")          # <-- (3) Audio-Only-Config
 
     import random, numpy as np, torch
     random.seed(args.random_seed)
@@ -55,14 +58,20 @@ def main():
         trainer.receive_input()
         trainer.back_propagation()
 
+        loss_val = trainer.get_loss()
+        if not np.isfinite(loss_val):
+            print(f"iter {it} | loss {loss_val} | net {args.net} — STOPPING: non-finite loss")
+            break
+
         if it % 10 == 0:
-            writer.add_scalar("Loss/train", trainer.get_loss(), it)
+            writer.add_scalar("Loss/train", loss_val, it)
         if it % 50 == 0:
-            print(f"iter {it} | loss {trainer.get_loss():.4f} | net {args.net}")
+            print(f"iter {it} | loss {loss_val:.4f} | net {args.net}")
         if it % args.model_save_interval == 0 and it > 0:
             trainer.save(args.checkpoint_dir, it)
 
-    trainer.save(args.checkpoint_dir, args.max_iter)
+    if np.isfinite(loss_val):
+        trainer.save(args.checkpoint_dir, args.max_iter)
     writer.close()
 
 
